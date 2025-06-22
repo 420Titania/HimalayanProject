@@ -4,59 +4,31 @@ from st_aggrid import AgGrid, GridOptionsBuilder
 
 # Configure page layout
 st.set_page_config(
-    page_title="Himalayan Data Explorer - Complete View",
+    page_title="Himalayan Expedition Explorer",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Master schema with ALL columns from each file
+# Simplified schema
 SCHEMA = {
-    "exped": [
-        'expid', 'peakid', 'year', 'season', 'host', 'route1', 'route2', 'route3', 'route4',
-        'nation', 'leaders', 'sponsor', 'success1', 'success2', 'success3', 'success4',
-        'ascent1', 'ascent2', 'ascent3', 'ascent4', 'claimed', 'disputed', 'countries',
-        'approach', 'bcdate', 'smtdate', 'smttime', 'smtdays', 'totdays', 'termdate',
-        'termreason', 'termnote', 'highpoint', 'traverse', 'ski', 'parapente', 'camps',
-        'rope', 'totmembers', 'smtmembers', 'mdeaths', 'tothired', 'smthired', 'hdeaths',
-        'nohired', 'o2used', 'o2none', 'o2climb', 'o2descent', 'o2sleep', 'o2medical',
-        'o2taken', 'o2unkwn', 'othersmts', 'campsites', 'accidents', 'achievment',
-        'agency', 'comrte', 'stdrte', 'primrte', 'primmem', 'primref', 'primid', 'chksum'
-    ],
-    "members": [
-        'expid', 'membid', 'peakid', 'myear', 'mseason', 'fname', 'lname', 'sex', 'yob',
-        'citizen', 'status', 'residence', 'occupation', 'leader', 'deputy', 'bconly',
-        'nottobc', 'support', 'disabled', 'hired', 'sherpa', 'tibetan', 'msuccess',
-        'mclaimed', 'mdisputed', 'msolo', 'mtraverse', 'mski', 'mparapente', 'mspeed',
-        'mhighpt', 'mperhighpt', 'msmtdate1', 'msmtdate2', 'msmtdate3', 'msmttime1',
-        'msmttime2', 'msmttime3', 'mroute1', 'mroute2', 'mroute3', 'mascent1', 'mascent2',
-        'mascent3', 'mo2used', 'mo2none', 'mo2climb', 'mo2descent', 'mo2sleep', 'mo2medical',
-        'mo2note', 'death', 'deathdate', 'deathtime', 'deathtype', 'deathhgtm', 'deathclass',
-        'msmtbid', 'msmtterm', 'hcn', 'mchksum'
-    ],
-    "peaks": [
-        'peakid', 'pkname', 'pkname2', 'location', 'heightm', 'heightf', 'himal', 'region',
-        'open', 'unlisted', 'trekking', 'trekyear', 'restrict', 'phost', 'pstatus', 'pyear',
-        'pseason', 'pmonth', 'pday', 'pexpid', 'pcountry', 'psummiters', 'psmtnote'
-    ],
-    "refer": [
-        'expid', 'refid', 'ryear', 'rtype', 'rjrnl', 'rauthor', 'rtitle', 'rpublisher',
-        'rpubdate', 'rlanguage', 'rcitation', 'ryak94'
-    ]
+    "exped": ['expid', 'peakid', 'year', 'host', 'leaders', 'nation', 'sponsor', 'highpoint', 'hdeaths'],
+    "members": ['expid', 'fname', 'lname', 'status', 'death', 'deathtype'],
+    "peaks": ['peakid', 'pkname', 'pkname2', 'location', 'heightm'],
+    "refer": ['expid', 'refid', 'ryear', 'rauthor', 'rtitle', 'rpublisher', 'rpubdate']
 }
 
 @st.cache_data
 def load_data():
-    """Load all datasets with encoding fallback"""
+    """Load data with encoding fallback and column validation"""
     data = {}
     for file in SCHEMA.keys():
         try:
-            # Try UTF-8 first, fallback to latin1 if needed
             try:
                 df = pd.read_csv(f"DataCSV/{file}.csv", dtype=str, encoding='utf-8')
             except UnicodeDecodeError:
                 df = pd.read_csv(f"DataCSV/{file}.csv", dtype=str, encoding='latin1')
             
-            # Ensure all columns exist
+            # Ensure required columns exist
             for col in SCHEMA[file]:
                 if col not in df.columns:
                     df[col] = 'N/A'
@@ -64,49 +36,115 @@ def load_data():
             
         except Exception as e:
             st.error(f"Error loading {file}: {str(e)}")
-            # Create empty dataframe with all columns
             data[file] = pd.DataFrame(columns=SCHEMA[file]).fillna('N/A')
-    return data['exped'], data['members'], data['peaks'], data['refer']
+    return data
 
-def display_full_table(df, title, height=400):
-    """Display complete table with all columns"""
-    st.subheader(title)
-    gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_default_column(
-        min_column_width=100,
-        resizable=True,
-        wrapText=True,
-        autoHeight=True
-    )
-    AgGrid(
-        df,
+def main():
+    data = load_data()
+    exped, members, peaks, refer = data['exped'], data['members'], data['peaks'], data['refer']
+
+    # ===== SIDEBAR FILTERS =====
+    with st.sidebar:
+        st.header("Filters")
+        selected_years = st.multiselect(
+            "Year",
+            options=sorted(exped['year'].unique(), reverse=True),
+            default=sorted(exped['year'].unique(), reverse=True)[:3]
+        )
+        
+        all_nations = sorted(exped['nation'].unique())
+        selected_nations = st.multiselect(
+            "Nation",
+            options=all_nations,
+            default=all_nations[:3] if len(all_nations) > 3 else all_nations
+        )
+        
+        leader_search = st.text_input("Search Leaders")
+
+    # ===== MAIN EXPEDITION TABLE =====
+    st.header("Expeditions")
+    
+    # Apply filters
+    filtered_exped = exped.copy()
+    if selected_years:
+        filtered_exped = filtered_exped[filtered_exped['year'].isin(selected_years)]
+    if selected_nations:
+        filtered_exped = filtered_exped[filtered_exped['nation'].isin(selected_nations)]
+    if leader_search:
+        filtered_exped = filtered_exped[
+            filtered_exped['leaders'].str.contains(leader_search, case=False, na=False)
+        ]
+
+    # Configure AgGrid
+    gb = GridOptionsBuilder.from_dataframe(filtered_exped[SCHEMA['exped'][:6]])
+    gb.configure_selection('single')
+    grid_response = AgGrid(
+        filtered_exped,
         gridOptions=gb.build(),
-        height=height,
+        height=300,
         theme='streamlit',
-        fit_columns_on_grid_load=False,
         reload_data=False
     )
 
-def main():
-    st.title("Himalayan Data Explorer - Complete Schema View")
-    exped, members, peaks, refer = load_data()
+    # ===== SAFE SELECTION HANDLING =====
+    selected_rows = grid_response['selected_rows']
     
-    # Display all tables with complete columns
-    display_full_table(exped, "Expeditions Table")
-    display_full_table(members, "Members Table")
-    display_full_table(peaks, "Peaks Table")
-    display_full_table(refer, "References Table")
-    
-    # Data quality checks
-    st.sidebar.header("Data Quality Report")
-    st.sidebar.metric("Total Expeditions", len(exped))
-    st.sidebar.metric("Total Members", len(members))
-    
-    # Check for data issues
-    if len(peaks[peaks['peakid'] == 'N/A']) > 0:
-        st.sidebar.warning("⚠ Missing peakid values")
-    if len(refer[refer['rcitation'] == 'N/A']) > 0:
-        st.sidebar.warning("⚠ Missing citations")
+    # Handle both list and DataFrame return types
+    if isinstance(selected_rows, list) and len(selected_rows) > 0:
+        selected_exp = selected_rows[0]
+    elif hasattr(selected_rows, 'to_dict'):
+        selected_rows = selected_rows.to_dict('records')
+        if selected_rows:
+            selected_exp = selected_rows[0]
+        else:
+            selected_exp = None
+    else:
+        selected_exp = None
+
+    # ===== DETAILS SECTION =====
+    if selected_exp:
+        exp_id = selected_exp['expid']
+        
+        # 1. Expedition Details
+        with st.expander(f"📋 Expedition Details: {exp_id}", expanded=True):
+            cols = st.columns(3)
+            cols[0].write(f"**Leaders:** {selected_exp.get('leaders', 'N/A')}")
+            cols[1].write(f"**Sponsor:** {selected_exp.get('sponsor', 'N/A')}")
+            cols[2].write(f"**Highest Point:** {selected_exp.get('highpoint', 'N/A')}m")
+            st.write(f"**Deaths:** {selected_exp.get('hdeaths', 'N/A')}")
+
+        # 2. Members Table
+        with st.expander(f"🧑‍🤝‍🧑 Members", expanded=False):
+            member_data = members[members['expid'] == exp_id][SCHEMA['members'][1:]]
+            if not member_data.empty:
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.dataframe(member_data[['fname', 'lname', 'status']])
+                with col2:
+                    st.dataframe(member_data[['death', 'deathtype']])
+            else:
+                st.warning("No member records found")
+
+        # 3. Peak Information
+        peak_data = peaks[peaks['peakid'] == selected_exp['peakid']]
+        with st.expander("⛰️ Peak Details", expanded=False):
+            if not peak_data.empty:
+                peak = peak_data.iloc[0]
+                st.write(f"**Primary Name:** {peak['pkname']}")
+                st.write(f"**Alternate Name:** {peak.get('pkname2', 'N/A')}")
+                st.write(f"**Location:** {peak.get('location', 'N/A')}")
+                st.write(f"**Height:** {peak['heightm']}m")
+            else:
+                st.warning("No peak data available")
+
+        # 4. References
+        ref_data = refer[refer['expid'] == exp_id][SCHEMA['refer'][1:]]
+        with st.expander("📚 References", expanded=False):
+            if not ref_data.empty:
+                for _, row in ref_data.iterrows():
+                    st.caption(f"{row['ryear']} - {row['rauthor']}: *{row['rtitle']}* ({row['rpublisher']})")
+            else:
+                st.info("No references found")
 
 if __name__ == "__main__":
     main()
