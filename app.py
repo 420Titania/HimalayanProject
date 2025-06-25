@@ -86,7 +86,7 @@ def main():
         ]
 
     # Configuring the AgGrid
-    gb = GridOptionsBuilder.from_dataframe(filtered_exped[SCHEMA['exped'][:6]])
+    gb = GridOptionsBuilder.from_dataframe(filtered_exped[SCHEMA['exped'][:5]])
     gb.configure_selection('single')
     grid_response = AgGrid(
         filtered_exped,
