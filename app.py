@@ -11,7 +11,7 @@ st.set_page_config(
 
 #Schema of the Tables
 SCHEMA = {
-    "exped": ['expid', 'peakid', 'year', 'leaders', 'nation', 'host', 'sponsor', 'highpoint', 'hdeaths'],
+    "exped": ['expid', 'year', 'leaders', 'nation', 'host', 'sponsor', 'highpoint', 'hdeaths'],
     "members": ['expid', 'fname', 'lname', 'status', 'death', 'deathtype'],
     "peaks": ['peakid', 'pkname', 'pkname2', 'location', 'heightm'],
     "refer": ['expid', 'refid', 'ryear', 'rauthor', 'rtitle', 'rpublisher']
@@ -128,7 +128,7 @@ def main():
 
             cols = st.columns(3)
             cols[0].write(f"**Sponsor:** {selected_exp['sponsor']}")
-            cols[1].write(f"**High Point:** {selected_exp['highpoint']} m")
+            cols[1].write(f"**Height:** {selected_exp['highpoint']} m")
             cols[2].write(f"**Deaths:** {selected_exp['hdeaths']}")
         
         # 2. Members Table
