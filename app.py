@@ -154,7 +154,7 @@ def main():
                 cols = st.columns(3)
                 cols[0].write(f"**Location:** {peak_data['location'].values[0]}")
                 cols[1].write(f"**Primary Name:** {peak_data['pkname'].values[0]}")
-                cols[2].write(f"**Alternate Name:** {peak_data['pkname2'].values[0] if 'pkname2' in peak_data.columns else 'N/A'}")
+                cols[2].write(f"**Alternate Name:** {peak_data['pkname2'].values[0]}")
             else:
                 st.warning("No peak data available")
 
