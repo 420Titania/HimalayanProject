@@ -1,0 +1,7 @@
+# Core dependencies
+streamlit==1.32.2       # Web framework
+pandas==2.1.4          # Data handling
+st-aggrid==0.3.4       # Interactive tables
+
+# Optional (uncomment if needed)
+# python-dotenv==1.0.0  # For environment variables

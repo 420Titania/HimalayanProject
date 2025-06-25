@@ -51,7 +51,7 @@ def main():
     data = load_data()
     exped, members, peaks, refer = data['exped'], data['members'], data['peaks'], data['refer']
 
-    # ===== SIDEBAR FILTERS =====
+    # < SIDEBAR FILTERS >
     with st.sidebar:
         st.header("Filters")
 
@@ -71,10 +71,10 @@ def main():
         #Leader Filter
         leader_search = st.text_input("Search Leaders")
 
-    # ===== MAIN EXPEDITION TABLE =====
+    # < MAIN EXPEDITION TABLE >
     st.header("Expeditions")
     
-    # Apply filters
+    # Applying filters
     filtered_exped = exped.copy()
     if selected_years:
         filtered_exped = filtered_exped[filtered_exped['year'].isin(selected_years)]
@@ -95,6 +95,66 @@ def main():
         theme='streamlit',
         reload_data=False
     )
+
+    # < SAFE SELECTION HANDLING >
+    selected_rows = grid_response['selected_rows']
+    
+    # Handle both list and DataFrame return types
+    if isinstance(selected_rows, list) and len(selected_rows) > 0:
+        selected_exp = selected_rows[0]
+    elif hasattr(selected_rows, 'to_dict'):
+        selected_rows = selected_rows.to_dict('records')
+        if selected_rows:
+            selected_exp = selected_rows[0]
+        else:
+            selected_exp = None
+    else:
+        selected_exp = None
+
+    # < DETAILS SECTION >
+    if selected_exp:
+        exp_id = selected_exp['expid']
+        
+        # 1. Expedition Details
+        with st.expander(f"📋 Expedition Details: {exp_id}", expanded=True):
+            cols = st.columns(3)
+            cols[0].write(f"**Leaders:** {selected_exp.get('leaders', 'N/A')}")
+            cols[1].write(f"**Sponsor:** {selected_exp.get('sponsor', 'N/A')}")
+            cols[2].write(f"**Highest Point:** {selected_exp.get('highpoint', 'N/A')}m")
+            st.write(f"**Deaths:** {selected_exp.get('hdeaths', 'N/A')}")
+
+        # 2. Members Table
+        with st.expander(f"🧑‍🤝‍🧑 Members", expanded=False):
+            member_data = members[members['expid'] == exp_id][SCHEMA['members'][1:]]
+            if not member_data.empty:
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.dataframe(member_data[['fname', 'lname', 'status']])
+                with col2:
+                    st.dataframe(member_data[['death', 'deathtype']])
+            else:
+                st.warning("No member records found")
+
+        # 3. Peak Information
+        peak_data = peaks[peaks['peakid'] == selected_exp['peakid']]
+        with st.expander("⛰️ Peak Details", expanded=False):
+            if not peak_data.empty:
+                peak = peak_data.iloc[0]
+                st.write(f"**Primary Name:** {peak['pkname']}")
+                st.write(f"**Alternate Name:** {peak.get('pkname2', 'N/A')}")
+                st.write(f"**Location:** {peak.get('location', 'N/A')}")
+                st.write(f"**Height:** {peak['heightm']}m")
+            else:
+                st.warning("No peak data available")
+
+        # 4. References
+        ref_data = refer[refer['expid'] == exp_id][SCHEMA['refer'][1:]]
+        with st.expander("📚 References", expanded=False):
+            if not ref_data.empty:
+                for _, row in ref_data.iterrows():
+                    st.caption(f"{row['ryear']} - {row['rauthor']}: *{row['rtitle']}* ({row['rpublisher']})")
+            else:
+                st.info("No references found")    
 
 if __name__ == "__main__":
     main()
