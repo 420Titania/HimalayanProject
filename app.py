@@ -14,7 +14,7 @@ SCHEMA = {
     "exped": ['expid', 'peakid', 'year', 'leaders', 'nation', 'host', 'sponsor', 'highpoint', 'hdeaths'],
     "members": ['expid', 'fname', 'lname', 'status', 'death', 'deathtype'],
     "peaks": ['peakid', 'pkname', 'pkname2', 'location', 'heightm'],
-    "refer": ['expid', 'refid', 'ryear', 'rauthor', 'rtitle', 'rpublisher', 'rpubdate']
+    "refer": ['expid', 'refid', 'ryear', 'rauthor', 'rtitle', 'rpublisher']
 }
 
 #Def for Loading the Data
@@ -117,15 +117,19 @@ def main():
         
         # 1. Expedition Details
         with st.expander(f"🧭 Expedition Details:", expanded=True):
-            cols = st.columns(2)        
+            cols = st.columns(3)        
             cols[0].write(f"**Expedition ID:** {selected_exp['expid']}")
-            cols[1].write(f"**Peak ID:** {selected_exp['peakid']}")
+            cols[1].write(f"**Year:** {selected_exp['year']}")
             
-            cols = st.columns(4)
-            cols[0].write(f"**Year:** {selected_exp['year']}")
-            cols[1].write(f"**Host:** {selected_exp['host']}")
-            cols[2].write(f"**Leaders:** {selected_exp['leaders']}")
-            cols[3].write(f"**Nation:** {selected_exp['nation']}")
+            cols = st.columns(3)
+            cols[0].write(f"**Host:** {selected_exp['host']}")
+            cols[1].write(f"**Leaders:** {selected_exp['leaders']}")
+            cols[2].write(f"**Nation:** {selected_exp['nation']}")
+
+            cols = st.columns(3)
+            cols[0].write(f"**Sponsor:** {selected_exp['sponsor']}")
+            cols[1].write(f"**High Point:** {selected_exp['highpoint']} m")
+            cols[2].write(f"**Deaths:** {selected_exp['hdeaths']}")
         
         # 2. Members Table
         with st.expander(f"🗣 Members", expanded=False):
@@ -143,11 +147,14 @@ def main():
         peak_data = peaks[peaks['peakid'] == selected_exp['peakid']]
         with st.expander("⛰️ Peak Details", expanded=False):
             if not peak_data.empty:
-                peak = peak_data.iloc[0]
-                st.write(f"**Primary Name:** {peak['pkname']}")
-                st.write(f"**Alternate Name:** {peak.get('pkname2', 'N/A')}")
-                st.write(f"**Location:** {peak.get('location', 'N/A')}")
-                st.write(f"**Height:** {peak['heightm']}m")
+                cols = st.columns(3)
+                cols[0].write(f"**Peak ID:** {selected_exp['peakid']}")
+                cols[1].write(f"**Height:** {peak_data['heightm'].values[0]} m")
+                
+                cols = st.columns(3)
+                cols[0].write(f"**Location:** {peak_data['location'].values[0]}")
+                cols[1].write(f"**Primary Name:** {peak_data['pkname'].values[0]}")
+                cols[2].write(f"**Alternate Name:** {peak_data['pkname2'].values[0] if 'pkname2' in peak_data.columns else 'N/A'}")
             else:
                 st.warning("No peak data available")
 
