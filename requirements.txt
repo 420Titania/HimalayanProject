@@ -1,7 +1,5 @@
-# Core dependencies
-streamlit==1.32.2       # Web framework
-pandas==2.1.4          # Data handling
-st-aggrid==0.3.4       # Interactive tables
-
-# Optional (uncomment if needed)
-# python-dotenv==1.0.0  # For environment variables
+streamlit>=1.22.0 #Web Framework
+pandas>=1.5.0 #Data handling
+numpy>=1.23.0 #Interactive tables
+streamlit-aggrid>=0.3.3  
+python-dateutil>=2.8.2  
