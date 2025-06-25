@@ -11,7 +11,7 @@ st.set_page_config(
 
 #Schema of the Tables
 SCHEMA = {
-    "exped": ['expid', 'peakid', 'year', 'host', 'leaders', 'nation', 'sponsor', 'highpoint', 'hdeaths'],
+    "exped": ['expid', 'peakid', 'year', 'leaders', 'nation', 'host', 'sponsor', 'highpoint', 'hdeaths'],
     "members": ['expid', 'fname', 'lname', 'status', 'death', 'deathtype'],
     "peaks": ['peakid', 'pkname', 'pkname2', 'location', 'heightm'],
     "refer": ['expid', 'refid', 'ryear', 'rauthor', 'rtitle', 'rpublisher', 'rpubdate']
