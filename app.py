@@ -72,7 +72,7 @@ def main():
         leader_search = st.text_input("Search Leaders")
 
     # < MAIN EXPEDITION TABLE >
-    st.header("Expeditions")
+    st.header("🗂️ Expeditions")
     
     # Applying filters
     filtered_exped = exped.copy()
@@ -116,15 +116,19 @@ def main():
         exp_id = selected_exp['expid']
         
         # 1. Expedition Details
-        with st.expander(f"📋 Expedition Details: {exp_id}", expanded=True):
-            cols = st.columns(3)
-            cols[0].write(f"**Leaders:** {selected_exp.get('leaders', 'N/A')}")
-            cols[1].write(f"**Sponsor:** {selected_exp.get('sponsor', 'N/A')}")
-            cols[2].write(f"**Highest Point:** {selected_exp.get('highpoint', 'N/A')}m")
-            st.write(f"**Deaths:** {selected_exp.get('hdeaths', 'N/A')}")
-
+        with st.expander(f"🧭 Expedition Details:", expanded=True):
+            cols = st.columns(2)        
+            cols[0].write(f"**Expedition ID:** {selected_exp['expid']}")
+            cols[1].write(f"**Peak ID:** {selected_exp['peakid']}")
+            
+            cols = st.columns(4)
+            cols[0].write(f"**Year:** {selected_exp['year']}")
+            cols[1].write(f"**Host:** {selected_exp['host']}")
+            cols[2].write(f"**Leaders:** {selected_exp['leaders']}")
+            cols[3].write(f"**Nation:** {selected_exp['nation']}")
+        
         # 2. Members Table
-        with st.expander(f"🧑‍🤝‍🧑 Members", expanded=False):
+        with st.expander(f"🗣 Members", expanded=False):
             member_data = members[members['expid'] == exp_id][SCHEMA['members'][1:]]
             if not member_data.empty:
                 col1, col2 = st.columns(2)
