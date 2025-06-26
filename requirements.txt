@@ -1,4 +1,4 @@
-# Core packages (verified working in your environment)
+# Core packages
 streamlit==1.46.0
 pandas==2.3.0
 streamlit-aggrid==1.1.5.post1  # Note: Package name differs from st-aggrid
