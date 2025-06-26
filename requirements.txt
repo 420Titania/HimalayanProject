@@ -1,5 +1,9 @@
-streamlit>=1.22.0 
-pandas>=1.5.0 
-numpy>=1.23.0 
-streamlit-aggrid>=0.3.3  
-python-dateutil>=2.8.2  
+# Core packages (verified working in your environment)
+streamlit==1.46.0
+pandas==2.3.0
+streamlit-aggrid==1.1.5.post1  # Note: Package name differs from st-aggrid
+
+# Essential implicit dependencies
+numpy==1.26.4  # Required by pandas 2.3.0
+python-dateutil==2.9.0  # Required by pandas
+pytz==2024.1  # Timezone handling
