@@ -1,5 +1,5 @@
-streamlit>=1.22.0 #Web Framework
-pandas>=1.5.0 #Data handling
-numpy>=1.23.0 #Interactive tables
+streamlit>=1.22.0 
+pandas>=1.5.0 
+numpy>=1.23.0 
 streamlit-aggrid>=0.3.3  
 python-dateutil>=2.8.2  
